@@ -95,5 +95,148 @@ public class StreamApiPractice {
         List<String> names2 = Arrays.asList("bob", "ALICE", "andrew", "david");
         boolean result = names2.stream().anyMatch(obj -> obj.toUpperCase().startsWith("A"));
         System.out.println("Exercise 10: Matches\n" + result);
+
+        /*Level 2: Intermediate
+        * Focus on reduce, distinct, flatMap, and collectors.*/
+
+        /*Ex-11 Sum of squares of evens
+        Data: List<Integer> nums = Arrays.asList(1,2,3,4,5,6);
+        Task: Sum squares of even numbers.
+        Expected: 2²+4²+6² = 4+16+36 = 56*/
+
+        List<Integer> nums7 = Arrays.asList(1,2,3,4,5,6);
+        int sum=nums7.stream()
+                .filter(num->num%2==0)
+                .map(x -> x*x)
+                .reduce(Integer::sum)
+                .get();
+        System.out.println("Exercise 11: Sum of squares of even numbers\n" + sum);
+
+        /*Ex-12 Product with reduce
+          Data: List<Integer> nums = Arrays.asList(2,3,4,5);
+          Task: Product via reduce.
+          Expected: 120   */
+
+        List<Integer> nums8 = Arrays.asList(2,3,4,5);
+        int prod=nums8.stream()
+                .reduce((a,b)->a*b).orElse(0);
+        //use reduce without identity for reduce so it will return optional that will be ideal for empty list case.
+        //using reduce with neutral identity will provide 1 as the answer when list is empty.
+        System.out.println("Exercise 12: Prod of all numbers\n" + prod);
+
+        /*Ex-13 Distinct words (case-insensitive)
+        Data:
+        List<String> sentences = Arrays.asList(
+         "Java Stream API provides a fluent interface.",
+         "Streams support functional-style operations.",
+         "Count distinct WORDS across sentences!"
+        );
+        Task: Count distinct words (lowercase, strip punctuation).
+        Expected: e.g., ~13–18 (depends on tokenization; aim for robust normalization).*/
+
+        List<String> sentences = Arrays.asList(
+                "Java Stream API provides a fluent interface.",
+                "Streams support functional-style operations.",
+                "Count distinct WORDS across sentences!"
+        );
+        int distinct_count=(int)sentences.stream()
+                //split each sentences into word
+                .flatMap(str->Arrays.stream(str.split(" ")))
+                //normalize: lowercase+remove other cases
+                .map(str->str.toLowerCase().replaceAll("[^a-z]", ""))
+                .distinct()
+                .count();
+        System.out.println("Exercise 13: Distinct count\n" + distinct_count);
+
+        /*Ex-14 First 5 evens
+        Data: List<Integer> nums = Arrays.asList(2,4,6,8,10,12,14);
+        Task: Take first 5 even numbers.
+        Expected: [2,4,6,8,10]*/
+        List<Integer> nums9 = Arrays.asList(2,4,6,8,10,12,14);
+        List<Integer> result14=nums9.stream()
+                .filter(obj->obj%2==0)
+                .limit(5)
+                .toList();
+        System.out.println("Exercise 14: Filter evens\n" + result14);
+
+        /*Ex-15 Longest string
+        Data: List<String> arr = Arrays.asList("bear","tiger","hippopotamus","cat");
+        Task: Longest string.
+        Expected: "hippopotamus"
+        * */
+        List<String> arr = Arrays.asList("bear","tiger","hippopotamus","cat");
+        String str=arr.stream()
+                .max(Comparator.comparing(String::length))
+                .get();
+        System.out.println("Exercise 15: Longest String in a list\n" + str);
+
+
+
+        /*Ex-16 Given a list of numbers, return the second highest element.
+        * Second highest
+        Data: List<Integer> nums = Arrays.asList(10, 20, 5, 30, 25, 30);
+        Task: Second highest distinct value.
+        Expected: 25
+        * */
+        List<Integer> nums10 = Arrays.asList(10, 20, 5, 30, 25, 30);
+        int secondHighest=nums10
+                .stream()
+                .distinct()
+                .sorted(
+                        Comparator.reverseOrder())
+                .skip(1)
+                .findFirst()
+                .get();
+        System.out.println("Exercise 16: Second Highest List\n" + secondHighest);
+
+        /*Ex-17 Average word length
+        Data: List<String> words = Arrays.asList("alpha","beta","gamma","delta");
+        Task: Average length as double.
+        Expected: (5+4+5+5)/4 = 4.75
+        * */
+        List<String> words2 = Arrays.asList("alpha","beta","gamma","delta");
+        double avgWordsCount=words2.stream()
+                .mapToInt(String::length)
+                .average()
+                .orElse(0.0);
+        System.out.println("Exercise 17: Words count Avg\n" + avgWordsCount);
+
+        /*Ex-18 Partition odd/even
+        Data: List<Integer> nums = Arrays.asList(1,2,3,4,5,6,7,8,9);
+        Task: Map<Boolean,List<Integer>> by evenness.
+        Expected: {true=[2,4,6,8], false=[1,3,5,7,9]}*/
+        List<Integer> nums11 = Arrays.asList(1,2,3,4,5,6,7,8,9);
+        Map<Boolean,List<Integer>> evenes=nums11.stream()
+                .collect(
+                        Collectors.partitioningBy(x->x%2==0));
+        System.out.println("Exercise 18: partition odd & even\n" + evenes);
+
+        /*Ex-19 Word → length map
+        Data: List<String> words = Arrays.asList("red","green","blue","green");
+        Task: Map word→length, handle duplicates (pick first or use merge fn).
+        Expected: {"red":3,"green":5,"blue":4}
+        * */
+        List<String> words3 = Arrays.asList("red","green","blue","green");
+        //Map<String,Integer> wordLength=words3.stream().distinct().collect(Collectors.toMap(Object::toString,String::length));
+        Map<String,Integer> wordLength=words3.stream()
+                .collect(Collectors.toMap(
+                        word->word,
+                        String::length,
+                        (len1,len2)->len1
+                ));
+        System.out.println("Exercise 19: word->length\n" + wordLength);
+
+        /*Ex-20 Sort by length then alpha
+        Data: List<String> words = Arrays.asList("to","tea","ted","ten","a","i");
+        Task: Sort by length asc, then lexicographically.
+        Expected: [a,i,to,tea,ted,ten]
+        * */
+        List<String> words4 = Arrays.asList("to","tea","ted","ten","i","a");
+        List<String> sortedByCustomOrder=words4.stream()
+                .sorted(
+                        Comparator.comparing(String::length)
+                                .thenComparing(Comparator.naturalOrder()))
+                .toList();
+        System.out.println("Exercise 20: Sorted by length then alpha\n"+sortedByCustomOrder);
     }
 }
