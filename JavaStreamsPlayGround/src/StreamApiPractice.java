@@ -238,5 +238,171 @@ public class StreamApiPractice {
                                 .thenComparing(Comparator.naturalOrder()))
                 .toList();
         System.out.println("Exercise 20: Sorted by length then alpha\n"+sortedByCustomOrder);
+
+
+        /*Level 3 — Grouping, flatMap, collectors*/
+
+        /*EX-21 Group by first char
+        Data: List<String> words = Arrays.asList("apple","ant","bat","ball","cat","car");
+        Task: Map<Character,List<String>>.
+        Expected: {a=[apple,ant], b=[bat,ball], c=[cat,car]}
+        * */
+        List<String> words5 = Arrays.asList("apple","ant","bat","ball","cat","car");
+        Map<Character,List<String>> resultMap=words5.stream()
+                .collect(Collectors.groupingBy(word->word.charAt(0)));
+        System.out.println("Exercise 21: Group by first character\n" + resultMap);
+
+
+        /*Ex-22 Top 3 longest words from sentences
+        Data:
+
+        List<String> sentences = Arrays.asList(
+         "Streams are powerful and expressive.",
+         "Collectors enable grouping and reduction.",
+         "Functional programming in Java is fun!"
+        );
+        Task: Normalize, split, distinct, sort by length desc, take 3.
+        Expected: e.g., ["programming","collectors","expressive"] (varies by normalization).*/
+
+        List<String> sentences2 = Arrays.asList(
+                "Streams are powerful and expressive.",
+                "Collectors enable grouping and reduction.",
+                "Functional programming in Java is fun!"
+        );
+       List<String> topThreeWord= sentences2.stream()
+                .flatMap(st->Arrays.stream(st.replaceAll("[.!]","").split(" ")))
+                .distinct()
+                .sorted(Comparator.comparing(String::length).reversed())
+                .limit(3)
+                .toList();
+       System.out.println("Exercise 22: Top 3 words\n" + topThreeWord);
+
+
+        /*Ex-23 Group names by length
+        Data: List<String> names = Arrays.asList("Amy","Bob","Chris","Dan","Eve","Frank");
+        Task: Map<Integer,List<String>> by name length.*/
+        List<String> names3 = Arrays.asList("Amy","Bob","Chris","Dan","Eve","Frank");
+        Map<Integer,List<String>> groupByLength=names3.stream()
+                .collect(Collectors.groupingBy(String::length));
+        System.out.println("Exercise 23: Group by length\n" + groupByLength);
+
+
+       /* EX-24 Employees grouped by dept
+        Data:
+        record Employee(String name, String dept, double salary) {}
+        List<Employee> es = Arrays.asList(
+                new Employee("Alice","IT", 90000),
+                new Employee("Bob","HR", 65000),
+                new Employee("Charlie","IT", 110000),
+                new Employee("Dana","Finance", 80000),
+                new Employee("Evan","HR", 72000)
+        );
+        Task: Group names by department: Map<String,List<String>>.*/
+        record Employee(String name, String dept, double salary) {}
+        List<Employee> es = Arrays.asList(
+                new Employee("Alice","IT", 90000),
+                new Employee("Bob","HR", 65000),
+                new Employee("Charlie","IT", 110000),
+                new Employee("Dana","Finance", 80000),
+                new Employee("Evan","HR", 72000)
+        );
+        Map<String,List<String>> empNames=es.stream()
+                .collect(Collectors.groupingBy(
+                        Employee::dept,
+                        Collectors.mapping(
+                                Employee::name,
+                                Collectors.toList())
+                ));
+        System.out.println("Exercise 24: employees group by dep\n" + empNames);
+
+
+        /*Ex-25 Top earner per dept
+        Data: (reuse es above)
+        Task: Map<String, Optional<Employee>> or Map<String,Employee> of max salary by dept.
+        Expected: IT→Charlie, HR→Evan, Finance→Dana*/
+
+        Map<String,Optional<Employee>> topEarnerDep=es.stream()
+                .collect(Collectors.groupingBy(Employee::dept,
+                        Collectors.maxBy(Comparator.comparing(Employee::salary))));
+        System.out.println("Exercise 25: top earner per dept\n "+topEarnerDep);
+
+        /*Ex-26 Average salary per dept
+        Data: (reuse es)
+        Task: Map<String, Double> dept→avg salary.  */
+
+        Map<String,Double> avgSalPerDep=es.stream().
+                collect(Collectors.groupingBy(Employee::dept,Collectors.averagingDouble(Employee::salary)));
+        System.out.println("Exercise 26: Avg salary per dept\n"+ avgSalPerDep);
+
+        /*Flatten nested lists
+        Data:
+        List<List<Integer>> nested = Arrays.asList(
+         Arrays.asList(1,2),
+         Arrays.asList(3,4,5),
+         Arrays.asList(6)
+        );
+        Task: Flatten to [1,2,3,4,5,6].*/
+        List<List<Integer>> nested = Arrays.asList(
+                Arrays.asList(1,2),
+                Arrays.asList(3,4,5),
+                Arrays.asList(6)
+        );
+
+        List<Integer> flatMap=nested.stream()
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+        System.out.println("Exercise 27: flatMap\n" + flatMap);
+
+
+        /*Ex-28 Word frequency in a sentence
+        Data: String s = "to be or not to be that is the question";
+        Task: Map<String,Long> frequency.
+        Expected: to=2, be=2, or=1, ...*/
+
+
+        String s = "to be or not to be that is the question";
+        Map<String,Long> wordFreq=Arrays.asList(s.split(" "))
+                .stream()
+                .collect(
+                        Collectors.groupingBy
+                                (Object::toString,
+                                        Collectors.counting()));
+        System.out.println("Exercise 28: wordFreq\n" + wordFreq);
+
+        /*Transactions total by type
+        Data
+        enum Type { CREDIT, DEBIT }
+        record Txn(String id, Type type, double amount) {}
+        List<Txn> txns = Arrays.asList(
+         new Txn("t1", Type.CREDIT, 120.0),
+         new Txn("t2", Type.DEBIT, 45.0),
+         new Txn("t3", Type.CREDIT, 80.0),
+         new Txn("t4", Type.DEBIT, 20.0)
+        );
+        Task: Map<Type,Double> totals.
+        Expected: CREDIT=200.0, DEBIT=65.0*/
+        enum Type { CREDIT, DEBIT }
+        record Txn(String id, Type type, double amount) {}
+        List<Txn> txns = Arrays.asList(
+                new Txn("t1", Type.CREDIT, 120.0),
+                new Txn("t2", Type.DEBIT, 45.0),
+                new Txn("t3", Type.CREDIT, 80.0),
+                new Txn("t4", Type.DEBIT, 20.0)
+        );
+        Map<Type,Double> typeTotal=txns.stream()
+                .collect(Collectors.groupingBy(Txn::type
+                ,Collectors.summingDouble(Txn::amount)));
+        System.out.println("Exercise 29: typeTotal\n" + typeTotal);
+
+
+        /* Ex-30
+        Concatenate first 2 even-length words
+        Data: List<String> words = Arrays.asList("alpha","beta","to","on","gamma");
+        Task: First 2 even-length, join.
+        Expected: "beta"(4) + "to"(2) → "betato" (if you pick in order)
+        * */
+        List<String> words6 = Arrays.asList("alpha","beta","to","on","gamma");
+        String concatEvenLengthWords=words6.stream().filter(x->x.length()%2==0).limit(2).collect(Collectors.joining());
+        System.out.println("Exercise 30: Concat even lengthChars\n"+concatEvenLengthWords);
     }
 }
